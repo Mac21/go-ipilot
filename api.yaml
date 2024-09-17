@@ -1,0 +1,3316 @@
+openapi: 3.0.0
+info:
+  description: "**Introduction**\n\nThis API provides the ability to retrieve and manage certain elements within the iPilot system. \n\n**OpenAPI Specification**\n\nThis API is documented in **OpenAPI format**.\n\n**Authentication**\n\niPilot requires two authentication elements:\n  - User credentials\n  - and an API Key\n\n\nTo request an API Key please email a request for an iPilot API Key to [support@nuwave.com](support@nuwave.com)\n\nOnce you have received your API Key you will then have the ability to authenticate with your iPilot Credentials, and begin accessing the functions described below.\n"
+  version: v1.7
+  title: iPilot Management API
+  x-logo:
+    url: https://24204443.fs1.hubspotusercontent-na1.net/hub/24204443/hubfs/Ipilot_July2023/Images/iPILOT_logo.png
+    backgroundColor: '#FFFFFF'
+    altText: iPilot Management API
+servers:
+  - url: https://api.nuwave.com/v1
+    variables:
+      basePath:
+        default: /v1
+tags:
+  - name: Authorization
+    description: This section provides details on authenticating and getting the access token needed for subsequent API calls.
+  - name: Accounts
+    description: This section provides the ability to manage Accounts in the iPilot system. You can retrieve, create, update and delete accounts through this section. This is where you will be able to manage Vendor, Customer and User account types.
+  - name: Call Forwarding
+    description: This section provides the ability to manage call forwarding for your phone numbers.
+  - name: Calling Party Number
+    description: This section provides the ability to manage calling party number (CPN) for your phone numbers.
+  - name: Carrier Management
+    description: This section provides the ability to access Carrier Management funcionality, getting carriers available, uploading numbers to a carrier, removing numbers.
+  - name: CNAM
+    description: This section provides the ability to manage outbound CNAM for your phone numbers.
+  - name: Disaster Plans
+    description: This section provides the ability to manage your disaster plans for your phone numbers.
+  - name: Site Management
+    description: This section provides the ability to manage sites inside of iPilot, retrieving, adding, removing, users in sites.
+  - name: Emergency Addresses
+    description: This section provides the ability manage Emeregency Services addresses, retrieving, updating, adding and/or removing.
+  - name: International Calling
+    description: This section provides the ability to manage international calling for your phone numbers.
+  - name: Microsoft Teams
+    description: This section provides the ability to manage the Microsoft Teams functionality in the iPilot system. You have the ability to retrieve numbers available for provisioining, provisioning a user to a phone number, retrieving user detailed information, updating user detailed information etc.
+  - name: Zoom
+    description: This section provides the ability to manage the Zoom peering exchange phone numbers in the iPilot system. You have the ability to retrieve numbers available for provisioining, provisioning a user to a phone number, retrieving user detailed information, updating user detailed information etc.
+paths:
+  /oauth2/authorize:
+    post:
+      summary: Get authentication token
+      tags:
+        - Authorization
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      requestBody:
+        description: iPilot User credentials
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/authCred'
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/accessToken'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+      security:
+        - api_key: []
+  /accounts:
+    get:
+      summary: Get current account details
+      tags:
+        - Accounts
+      description: Retrieves the current logged in account details
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: instance
+          in: query
+          description: this would be your platform identifier, [instance].ipilot.io
+          schema:
+            type: string
+            default: nuwave
+      responses:
+        "200":
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get accounts
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+  /accounts/customers:
+    get:
+      summary: Get list of customers under current account login
+      tags:
+        - Accounts
+      description: Retrieves the list of customers based on the current logged in account (Reseller, Admin etc.)
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: instance
+          in: query
+          description: this would be your platform identifier, [instance].ipilot.io
+          schema:
+            type: string
+            default: nuwave
+        - name: limit
+          in: query
+          description: page number to return
+          schema:
+            type: string
+            default: 1
+        - name: filter
+          in: query
+          description: "Filter for account results, example\nfilter=customerAccount.customerId:26 \n"
+          schema:
+            type: string
+        - name: customerLimit
+          in: query
+          description: page number to return of customers
+          schema:
+            type: string
+            default: 10
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccountInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get accounts
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+  /accounts/resellers:
+    get:
+      summary: Get list of resellers under current account login
+      tags:
+        - Accounts
+      description: Retrieves the list of resellers based on the current logged in account (Reseller, Admin etc.)
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: instance
+          in: query
+          description: this would be your platform identifier, [instance].ipilot.io
+          schema:
+            type: string
+            default: nuwave
+        - name: limit
+          in: query
+          description: page number to return
+          schema:
+            type: string
+            default: 1
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccountInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get accounts
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+    post:
+      summary: Create a new account
+      tags:
+        - Accounts
+      description: Creates a new account
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfAccountUpdateInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+  /accounts/{id}:
+    delete:
+      summary: Delete or deactivate an account
+      tags:
+        - Accounts
+      description: Deletes an iPilot account.  Note that all numbers must already be deprovisioned and deleted before delete will succeed
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to delete account
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+    get:
+      summary: Get Account details
+      tags:
+        - Accounts
+      description: Returns back account details
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+    put:
+      summary: Update account details
+      tags:
+        - Accounts
+      description: Update account details
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to delete account
+          content: {}
+      security:
+        - x-access-token:
+            - write:Accounts
+            - read:Accounts
+  /callForwarding/{customerId}:
+    post:
+      summary: Add call forwarding for phone number(s)
+      tags:
+        - Call Forwarding
+      description: Add call forwarding for phone number(s)
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallForwardingInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallForwarding
+            - read:CallForwarding
+    put:
+      summary: Update call forwarding
+      tags:
+        - Call Forwarding
+      description: Update call forwarding
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallForwardingInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to delete account
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallForwarding
+            - read:CallForwarding
+  /callForwarding/{customerId}/{phoneNumber}:
+    get:
+      summary: Retrieve call forwarding details
+      tags:
+        - Call Forwarding
+      description: Retrieve call forwarding details
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: resellerId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallForwardingInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallForwarding
+            - read:CallForwarding
+  /callForwarding/{id}:
+    delete:
+      summary: Remove call forwarding from telephone number
+      tags:
+        - Call Forwarding
+      description: Remove call forwarding from telephone number
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallForwarding
+  /callingPartyNumber/{customerId}:
+    post:
+      summary: Add calling party number for phone number(s)
+      tags:
+        - Calling Party Number
+      description: Add calling party number for phone number(s)
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallingPartyNumberInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallingPartyNumber
+            - read:CallingPartyNumber
+  /callingPartyNumber/{phoneNumber}:
+    get:
+      summary: Retrieve calling party number details
+      tags:
+        - Calling Party Number
+      description: Retrieve calling party number details
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallingPartyNumberInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallingPartyNumber
+            - read:CallingPartyNumber
+    delete:
+      summary: Remove calling party number from telephone number
+      tags:
+        - Calling Party Number
+      description: Remove calling party number from telephone number
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallingPartyNumber
+  /cnam/{customerId}:
+    post:
+      summary: Add outbound CNAM for phone number(s)
+      tags:
+        - CNAM
+      description: Add outbound CNAM for phone number(s)
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CNAMInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:CallingPartyNumber
+            - read:CallingPartyNumber
+  /cnam/{phoneNumber}:
+    get:
+      summary: Retrieve CNAM details
+      tags:
+        - CNAM
+      description: Retrieve CNAM details
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CNAMInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:CNAM
+            - read:CNAM
+    delete:
+      summary: Remove CNAM from telephone number
+      tags:
+        - CNAM
+      description: Remove CNAM from telephone number
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:CNAM
+  /disasterPlan/{customerId}:
+    post:
+      summary: Add disaster plan for phone number(s)
+      tags:
+        - Disaster Plans
+      description: Add disaster plan for phone number(s)
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisasterPlanInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:DisasterPlans
+            - read:DisasterPlans
+    get:
+      summary: Retrieve Disaster Plan details
+      tags:
+        - Disaster Plans
+      description: Retrieve Disaster Plan details
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisasterPlanInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:DisasterPlans
+            - read:DisasterPlans
+    put:
+      summary: Update disaster plan
+      tags:
+        - Disaster Plans
+      description: Update disaster plan
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisasterPlanInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to delete account
+          content: {}
+      security:
+        - x-access-token:
+            - write:DisasterPlans
+            - read:DisasterPlans
+    delete:
+      summary: Remove Disaster Plans from telephone number
+      tags:
+        - Disaster Plans
+      description: Remove Disaster Plans from telephone number
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:DisasterPlans
+  /msteams/{subdomain}/carriers:
+    get:
+      summary: Retrieve list of carriers
+      tags:
+        - Carrier Management
+      description: Retrieve list of Carriers
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: subomain
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: instance
+          in: query
+          description: this would be your platform identifier, [instance].ipilot.io
+          schema:
+            type: string
+            default: nuwave
+        - name: customerId
+          in: query
+          description: this would be the customer id field
+          required: true
+          schema:
+            type: number
+            default: 1
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfCarrierInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get carriers
+          content: {}
+      security:
+        - x-access-token:
+            - write:Carriers
+            - read:Carriers
+  /msteams/{subdomain}/carriers/{id}/numbers:
+    get:
+      summary: Get Carrier Numbers
+      tags:
+        - Carrier Management
+      description: Returns back carrier numbers
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subomain
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: instance
+          in: query
+          description: this would be your platform identifier, [instance].ipilot.io
+          schema:
+            type: string
+            default: nuwave
+        - name: customerId
+          in: query
+          description: this would be the customer id field
+          required: true
+          schema:
+            type: number
+            default: 1
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+      security:
+        - x-access-token:
+            - write:Carriers
+            - read:Carriers
+    post:
+      summary: Upload phone numbers to carrier
+      tags:
+        - Carrier Management
+      description: Upload phone numbers to carrier
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subdomain
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfPhoneNumber'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to upload numbers to carrier management
+          content: {}
+      security:
+        - x-access-token:
+            - write:Carriers
+            - read:Carriers
+  /msteams/{subdomain}/emergency/addresses:
+    get:
+      summary: Get Emergency Addresses
+      tags:
+        - Emergency Addresses
+      description: Returns back emergency addresses
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subdomain
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfEmergencyAddresses'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+      security:
+        - x-access-token:
+            - read:EmergencyAddresses
+    post:
+      summary: Add emergency address to account
+      tags:
+        - Emergency Addresses
+      description: Add emergency addresses to customer account
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyAddressInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+  /msteams/{subdomain}/emergency/addresses/{id}:
+    put:
+      summary: Update emergency address on account
+      tags:
+        - Emergency Addresses
+      description: Add emergency addresses to customer account
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subdomain
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyAddressInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+    delete:
+      summary: Remove emergency address from account
+      tags:
+        - Emergency Addresses
+      description: Remove emergency addresses from customer account
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subdomain
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:EmergencyAddresses
+  /internationalCalling/{customerId}:
+    post:
+      summary: Enable international calling for phone number(s)
+      tags:
+        - International Calling
+      description: Enable international calling for phone number(s)
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfInternationalCallingInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create account
+          content: {}
+      security:
+        - x-access-token:
+            - write:InternationalCalling
+            - read:InternationalCalling
+  /internationalCalling/{phoneNumber}:
+    get:
+      summary: Retrieve international calling on phone number
+      tags:
+        - International Calling
+      description: Retrieve international calling on phone number
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternationalCallingInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:InternationalCalling
+            - read:InternationalCalling
+    delete:
+      summary: Remove international calling from phone number
+      tags:
+        - International Calling
+      description: Remove international calling from phone number
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: phoneNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to add emergency addresses to customer
+          content: {}
+      security:
+        - x-access-token:
+            - write:InternationalCalling
+  /site:
+    get:
+      summary: Retrieve list of sites
+      tags:
+        - Site Management
+      description: Retrieve list of sites
+      parameters:
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: page number to return
+          schema:
+            type: string
+            default: 1
+        - name: siteLimit
+          in: query
+          description: page number to return of sites
+          schema:
+            type: string
+            default: 10
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfDepartmentInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to get departments
+          content: {}
+      security:
+        - x-access-token:
+            - write:Sites
+            - read:Sites
+    post:
+      summary: Create a new Site
+      tags:
+        - Site Management
+      description: Creates a new Site
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfDepartmentInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create department
+          content: {}
+      security:
+        - x-access-token:
+            - write:Sites
+            - read:Sites
+  /site/{id}:
+    delete:
+      summary: Removes a site
+      tags:
+        - Site Management
+      description: Removes an iPilot site.  Note that all users must already be removed from a site otherwise this command will fail due to users still be assigned to this site.
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to delete department
+          content: {}
+      security:
+        - x-access-token:
+            - write:Sites
+            - read:Sites
+    get:
+      summary: Get Site details
+      tags:
+        - Site Management
+      description: Returns back site details
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentInfo'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+      security:
+        - x-access-token:
+            - write:Sites
+            - read:Sites
+    put:
+      summary: Update site details
+      tags:
+        - Site Management
+      description: Update site details
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to remove department
+          content: {}
+      security:
+        - x-access-token:
+            - write:Sites
+            - read:Sites
+  /msteams:
+    get:
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      summary: Retrieves list of configured iPilot customer identifiers for Microsoft Teams, also known as subdomain.
+      tags:
+        - Microsoft Teams
+      description: Returns back list of configured customer identifiers the authenticated user has permission to access.
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+  /msteams/{subDomain}/users/{id}:
+    delete:
+      summary: Unprovision a user from a phone number
+      tags:
+        - Microsoft Teams
+      description: Unprovision user from phone number returning it into pool
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer Identifier as listed in iPilot
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+    get:
+      summary: Get detailed user information
+      tags:
+        - Microsoft Teams
+      description: Returns back a single user detail record
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer identifier as listed in iPilot
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+    put:
+      summary: Update detailed user information
+      tags:
+        - Microsoft Teams
+      description: Update a single user detail record
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer identifier as listed in iPilot
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/usercreate'
+            example:
+              upn: test.user@example.com
+              telephoneNumber: "4075551212"
+              firstName: test
+              lastName: marriedName
+              note: Our secretary
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+  /msteams/{subDomain}/users:
+    get:
+      summary: Retreive list of numbers available and provisioned user
+      tags:
+        - Microsoft Teams
+      description: Return back a list of provisioned users
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: limit
+          in: query
+          description: page number to return
+          schema:
+            type: string
+            default: 1
+        - name: telephoneNumber
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum:
+              - all
+              - configured
+              - not configured
+              - unassigned
+              - assigned
+              - failed to assign
+              - failed to unassign
+              - failed to grant policy
+              - invalid upn
+              - stopped
+              - pending stopped
+              - queued
+              - pending assign
+              - pending unassign
+            default: all
+        - name: note
+          in: query
+          description: Filter by last name
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by first name
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Filter by UPN
+          schema:
+            type: string
+        - name: firstName
+          in: query
+          description: Filter by note
+          schema:
+            type: string
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: lastName
+          in: query
+          description: Filter by telephoneNumber
+          schema:
+            type: string
+            description: any partial match, not regex.  e.g. 702 matches 17025551212 and 14077021212
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer identifier as listed in iPilot
+          schema:
+            type: string
+        - name: upn
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfuser'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+    post:
+      summary: Provision a new user UPN to a telephone number
+      tags:
+        - Microsoft Teams
+      description: Provisions a user to a telephone number
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer identifier as listed in iPilot
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              - upn: test.user@example.com
+                telephoneNumber: "4075551212"
+                firstName: test
+                lastName: user
+              - upn: test.user2@example.com
+                telephoneNumber: "4075551111"
+              - upn: test.user3@example.com
+            schema:
+              $ref: '#/components/schemas/ArrayOfusercreate'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+  /msteams/{subDomain}/numbers:
+    get:
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: limit
+          in: query
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            default: 100
+        - name: telephoneNumber
+          in: query
+          description: page number to return
+          schema:
+            type: string
+            default: 1
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum:
+              - all
+              - pending foc
+              - received foc
+              - ported
+              - new
+            default: all
+        - name: page
+          in: query
+          description: Filter by UPN
+          schema:
+            type: string
+            enum:
+              - all
+              - added
+              - not added
+        - name: Cookie
+          in: header
+          description: Filter by telephoneNumber
+          schema:
+            type: string
+            description: any partial match, not regex.  e.g. 702 matches 17025551212 and 14077021212
+        - name: subDomain
+          in: path
+          required: true
+          description: Customer identifier as listed in iPilot
+          schema:
+            type: string
+        - name: upn
+          in: query
+          schema:
+            type: string
+      summary: Get numbers that are available in pool
+      tags:
+        - Microsoft Teams
+      description: Return list of available numbers.  Numbers must be ordered through iPilot portal first
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfnumber'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+  /zoom:
+    get:
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: limit
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+      summary: Retrieves list of Zoom phone number inventory
+      tags:
+        - Zoom
+      description: Retrieves list of Zoom phone number inventory
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            X-Pagination-Current-Page:
+              schema:
+                type: string
+            X-Pagination-Page-Count:
+              schema:
+                type: string
+            X-Pagination-Total-Count:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+            X-Pagination-Per-Page:
+              schema:
+                type: string
+            Link:
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:Zoom
+            - read:Zoom
+    post:
+      summary: Provision/Peer phone number to Zoom Account.
+      tags:
+        - Zoom
+      description: Provisions/Peers phone number(s) to the linked Zoom Account.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: x-api-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfZoomInfo'
+        required: true
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        "400":
+          description: Bad request please check your request and try again
+          content: {}
+        "401":
+          description: Not authorized
+          content: {}
+        "403":
+          description: Forbidden not allowed to create department
+          content: {}
+      security:
+        - x-access-token:
+            - write:Zoom
+            - read:Zoom
+  /zoom/provisionTo/{id}:
+    get:
+      summary: Get information on provisioned/peered numbers
+      tags:
+        - Zoom
+      description: Returns back information for provisioned/peered numbers for a customer account in Zoom
+      parameters:
+        - name: x-api-key
+          schema:
+            type: string
+          in: header
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: Customer ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        "400":
+          description: 400 response
+          content: {}
+        "401":
+          description: 401 response
+          content: {}
+        "402":
+          description: 402 response
+          content: {}
+        "403":
+          description: 403 response
+          content: {}
+        "404":
+          description: 404 response
+          content: {}
+        "405":
+          description: 405 response
+          content: {}
+      security:
+        - x-access-token:
+            - write:MicrosoftTeams
+            - read:MicrosoftTeams
+components:
+  schemas:
+    status:
+      type: object
+      properties:
+        statusCode:
+          type: string
+          example: "200"
+        status:
+          type: string
+          example: No error
+    status401:
+      type: object
+      properties:
+        statusCode:
+          type: string
+          example: "401"
+        message:
+          type: object
+          properties:
+            Europe:
+              type: string
+              example: Already exist for this customer
+            fqdnId:
+              type: string
+              example: fqdnId XXXXXX has already been taken.
+            SBC:
+              type: string
+              example: SBC is not valid. Please select from (FQDN LIST)
+    accessToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: be28f26100853a0b64b7082ae02cc3c6
+        expires_at:
+          type: string
+          example: "1605397396"
+    authCred:
+      type: object
+      properties:
+        username:
+          type: string
+          example: ipilot
+        password:
+          type: string
+          example: mypassword
+        instance:
+          type: string
+          example: this would be your platform identifier, [instance].ipilot.io
+    user:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int32
+          example: "123"
+        upn:
+          type: string
+          example: test.user@example.com
+        firstName:
+          type: string
+          example: Test
+        lastName:
+          type: string
+          example: User
+        note:
+          type: string
+          example: Sales
+        status:
+          type: string
+          enum:
+            - all
+            - configured
+            - not configured
+            - unassigned
+            - assigned
+            - failed to assign
+            - failed to unassign
+            - failed to grant policy
+            - invalid upn
+            - stopped
+            - pending stopped
+            - queued
+            - pending assign
+            - pending unassign
+          example: configured
+        telephoneNumber:
+          type: string
+          example: "1234567890"
+    usercreate:
+      type: object
+      required:
+        - upn
+        - telephoneNumber
+      properties:
+        upn:
+          type: string
+          example: test.user@example.com
+        firstName:
+          type: string
+          example: test
+        lastName:
+          type: string
+          example: user
+        note:
+          type: string
+          example: Our secretary
+        telephoneNumber:
+          type: string
+          example: "4075551212"
+          default: ""
+          description: An unassigned phone number in application pool OR leave blank for next available free number.  If no numbers available in pool, fails with error_blah
+    ArrayOfnumber:
+      type: array
+      items:
+        $ref: '#/components/schemas/number'
+    ArrayOfuser:
+      type: array
+      items:
+        $ref: '#/components/schemas/user'
+    ArrayOfcarrier:
+      type: array
+      items:
+        $ref: '#/components/schemas/carrier'
+    ArrayOfEmergencyAddresses:
+      type: array
+      items:
+        $ref: '#/components/schemas/EmergencyAddressInfo'
+    ArrayOfPhoneNumber:
+      type: array
+      items:
+        $ref: '#/components/schemas/phoneNumber'
+    carrier:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: number
+    phoneNumber:
+      type: object
+      properties:
+        number:
+          type: string
+        countryCode:
+          type: string
+    number:
+      type: object
+      properties:
+        tn:
+          type: string
+        orderType:
+          type: string
+        type:
+          type: string
+        subType:
+          type: string
+        routeLabel:
+          type: string
+        provisionUser:
+          type: object
+          properties:
+            id:
+              type: string
+            upn:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            note:
+              type: string
+            status:
+              type: string
+            telephoneNumber:
+              type: string
+        tnFeatures:
+          type: object
+          properties:
+            cnam:
+              type: string
+            e911:
+              type: string
+        activatatedDate:
+          type: string
+        status:
+          type: string
+          enum:
+            - all
+            - pending foc
+            - received foc
+            - ported
+            - new
+    ArrayOfusercreate:
+      type: array
+      items:
+        $ref: '#/components/schemas/usercreate'
+    AccountInfo:
+      type: object
+      required:
+        - accountType
+        - companyName
+        - city
+      properties:
+        accountType:
+          type: string
+          enum:
+            - Reseller
+            - Customer
+            - User
+          example: Reseller | Customer | User
+        resellerAccount:
+          $ref: '#/components/schemas/ResellerAccount'
+        customerAccount:
+          $ref: '#/components/schemas/CustomerAccount'
+        userAccount:
+          $ref: '#/components/schemas/UserAccount'
+    AccountInfoUpdate:
+      type: object
+      required:
+        - accountType
+        - companyName
+        - city
+      properties:
+        accountType:
+          type: string
+          enum:
+            - Reseller
+            - Customer
+            - User
+          example: Reseller | Customer | User
+        resellerAccount:
+          $ref: '#/components/schemas/ResellerAccountUpdate'
+        customerAccount:
+          $ref: '#/components/schemas/CustomerAccountUpdate'
+        userAccount:
+          $ref: '#/components/schemas/UserAccount'
+    VendorInfo:
+      type: object
+      required:
+        - customerId
+        - productCode
+        - profileName
+      properties:
+        accountId:
+          type: string
+        productCode:
+          type: string
+        profileName:
+          type: string
+        vendorField1:
+          type: string
+        vendorField2:
+          type: string
+        vendorField3:
+          type: string
+        vendorField4:
+          type: string
+        vendorField5:
+          type: string
+        vendorField6:
+          type: string
+        vendorField7:
+          type: string
+        vendorField8:
+          type: string
+        vendorField9:
+          type: string
+    ResellerAccount:
+      type: object
+      properties:
+        resellerId:
+          type: string
+        companyName:
+          type: string
+        streetNumber:
+          type: string
+        streetName:
+          type: string
+        zipCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        notificationEmail:
+          type: string
+        agent:
+          type: string
+        agentEmail:
+          type: string
+        vendorInfo:
+          $ref: '#/components/schemas/VendorInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        technicalContactInfo:
+          $ref: '#/components/schemas/TechnicalContactInfo'
+        primaryServiceAddress:
+          $ref: '#/components/schemas/PrimaryServiceAddress'
+        routingProfile:
+          $ref: '#/components/schemas/RoutingProfile'
+        domesticDIDProvider:
+          $ref: '#/components/schemas/DomesticDIDProvider'
+        internationalDIDProvider:
+          $ref: '#/components/schemas/InternationalDIDProvider'
+        loginInformation:
+          $ref: '#/components/schemas/LoginInformation'
+        modulesAccess:
+          $ref: '#/components/schemas/ModulesAccess'
+    ResellerAccountUpdate:
+      type: object
+      properties:
+        companyName:
+          type: string
+        streetNumber:
+          type: string
+        streetName:
+          type: string
+        zipCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        notificationEmail:
+          type: string
+        agent:
+          type: string
+        agentEmail:
+          type: string
+        vendorInfo:
+          $ref: '#/components/schemas/VendorInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        technicalContactInfo:
+          $ref: '#/components/schemas/TechnicalContactInfo'
+        primaryServiceAddress:
+          $ref: '#/components/schemas/PrimaryServiceAddress'
+        routingProfile:
+          $ref: '#/components/schemas/RoutingProfile'
+        domesticDIDProvider:
+          $ref: '#/components/schemas/DomesticDIDProvider'
+        internationalDIDProvider:
+          $ref: '#/components/schemas/InternationalDIDProvider'
+        loginInformation:
+          $ref: '#/components/schemas/LoginInformation'
+        modulesAccess:
+          $ref: '#/components/schemas/ModulesAccess'
+    CustomerAccount:
+      type: object
+      required:
+        - customerContractingEntity
+        - endCustomerName
+        - serviceId
+        - parentId
+      properties:
+        resellerId:
+          type: string
+        customerId:
+          type: string
+        companyName:
+          type: string
+        streetNumber:
+          type: string
+        streetName:
+          type: string
+        zipCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        notificationEmail:
+          type: string
+        agent:
+          type: string
+        agentEmail:
+          type: string
+        customerContractingEntity:
+          type: string
+        endCustomerName:
+          type: string
+        fqdnId:
+          type: string
+        serviceId:
+          type: string
+        parentId:
+          type: string
+        plan:
+          type: string
+        orderType:
+          type: string
+        role:
+          type: string
+        vendorInfo:
+          $ref: '#/components/schemas/VendorInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        technicalContactInfo:
+          $ref: '#/components/schemas/TechnicalContactInfo'
+        primaryServiceAddress:
+          $ref: '#/components/schemas/PrimaryServiceAddress'
+        routingProfile:
+          $ref: '#/components/schemas/RoutingProfile'
+        domesticDIDProvider:
+          $ref: '#/components/schemas/DomesticDIDProvider'
+        internationalDIDProvider:
+          $ref: '#/components/schemas/InternationalDIDProvider'
+        loginInformation:
+          $ref: '#/components/schemas/LoginInformation'
+        modulesAccess:
+          $ref: '#/components/schemas/ModulesAccess'
+    UserAccount:
+      type: object
+      properties:
+        loginInformation:
+          $ref: '#/components/schemas/LoginInformation'
+    CustomerAccountUpdate:
+      type: object
+      properties:
+        companyName:
+          type: string
+        streetNumber:
+          type: string
+        streetName:
+          type: string
+        zipCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        notificationEmail:
+          type: string
+        agent:
+          type: string
+        agentEmail:
+          type: string
+        customerContractingEntity:
+          type: string
+        endCustomerName:
+          type: string
+        serviceId:
+          type: string
+        parentId:
+          type: string
+        plan:
+          type: string
+        orderType:
+          type: string
+        role:
+          type: string
+        vendorInfo:
+          $ref: '#/components/schemas/VendorInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        technicalContactInfo:
+          $ref: '#/components/schemas/TechnicalContactInfo'
+        primaryServiceAddress:
+          $ref: '#/components/schemas/PrimaryServiceAddress'
+        routingProfile:
+          $ref: '#/components/schemas/RoutingProfile'
+        domesticDIDProvider:
+          $ref: '#/components/schemas/DomesticDIDProvider'
+        internationalDIDProvider:
+          $ref: '#/components/schemas/InternationalDIDProvider'
+        loginInformation:
+          $ref: '#/components/schemas/LoginInformation'
+        modulesAccess:
+          $ref: '#/components/schemas/ModulesAccess'
+    BillingInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+    TechnicalContactInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+    PrimaryServiceAddress:
+      type: object
+      properties:
+        streetNumber:
+          type: string
+        streetName:
+          type: string
+        zipCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+    RoutingProfile:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: For example Rev.io account id
+    DomesticDIDProvider:
+      type: array
+      items:
+        type: object
+        properties:
+          providerName:
+            type: string
+          didCarrier:
+            type: string
+          e911Provider:
+            type: string
+    InternationalDIDProvider:
+      type: array
+      items:
+        type: object
+        properties:
+          providerName:
+            type: string
+          didCarrier:
+            type: string
+          e911Provider:
+            type: string
+          country:
+            type: string
+    CarrierInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Carrier Name
+        id:
+          type: number
+          description: Carrier ID
+    EmergencyAddressInfo:
+      type: object
+      properties:
+        locationId:
+          type: number
+          description: Location ID
+        name:
+          type: string
+          description: Address Location Name
+        streetNumber:
+          type: string
+          description: Address Street Number
+        streetName:
+          type: string
+          description: Address Street Name
+        addressType:
+          type: string
+          description: Address Type
+          example: OFC
+        addressDescription:
+          type: string
+          description: Address Description
+        countryCode:
+          type: string
+          description: Country Code
+          example: US
+        postalCode:
+          type: string
+          description: Postal Code
+        stateCode:
+          type: string
+          description: State Code
+        city:
+          type: string
+          description: City
+    LoginInformation:
+      type: array
+      items:
+        type: object
+        properties:
+          userName:
+            type: string
+          password:
+            type: string
+          firstName:
+            type: string
+          lastName:
+            type: string
+          email:
+            type: string
+          phoneNumber:
+            type: string
+    DepartmentInfo:
+      type: object
+      required:
+        - departmentName
+      properties:
+        departmentName:
+          type: string
+          example: Sales | Marketing | Site Location A
+    ZoomInfo:
+      type: object
+      required:
+        - provisionAction
+        - telephoneNumber
+        - provisionTo
+        - userType
+      properties:
+        provisionAction:
+          type: string
+          example: peering_number | provision_number
+        telephoneNumber:
+          type: string
+          example: E164 format phone number 12223334444
+        provisionTo:
+          type: string
+          example: Email address of the user to assign the phone number to
+        userType:
+          type: string
+          example: user | call queue | auto attendant | common area
+        note:
+          type: string
+          example: area to add a note for this number/user
+    CallForwardingInfo:
+      type: object
+      required:
+        - telephoneNumber
+        - callForwardNumber
+        - countryCode
+      properties:
+        telephoneNumbers:
+          type: array
+          example:
+            - "15556667777"
+            - "12223334444"
+        callForwardNumber:
+          type: string
+          example: E164 format phone number 12223334444
+        countryCode:
+          type: string
+          example: Two character country code US | CA | MX etc.
+    CallingPartyNumberInfo:
+      type: object
+      required:
+        - telephoneNumber
+        - cpnNumber
+        - countryCode
+      properties:
+        telephoneNumbers:
+          type: array
+          example:
+            - "15556667777"
+            - "12223334444"
+        cpnNumber:
+          type: string
+          example: E164 format phone number 12223334444
+        countryCode:
+          type: string
+          example: Two character country code US | CA | MX etc.
+    CNAMInfo:
+      type: object
+      required:
+        - telephoneNumber
+        - callingName
+        - firstName
+        - lastName
+      properties:
+        telephoneNumbers:
+          type: array
+          example:
+            - "15556667777"
+            - "12223334444"
+        callingName:
+          type: string
+          example: John Doe
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        businessName:
+          type: string
+          example: John Doe Inc.
+    DisasterPlanInfo:
+      type: object
+      required:
+        - telephoneNumber
+        - callForwardNumber
+        - disasterPlanID
+        - countryCode
+      properties:
+        telephoneNumbers:
+          type: array
+          example:
+            - "15556667777"
+            - "12223334444"
+        callForwardNumber:
+          type: string
+          example: E164 format phone number 12223334444
+        disasterPlanID:
+          type: string
+          example: DAS-123456
+        countryCode:
+          type: string
+          example: Two character country code US | CA | MX etc.
+    InternationalCallingInfo:
+      type: object
+      required:
+        - telephoneNumber
+        - criteria
+      properties:
+        telephoneNumber:
+          type: string
+          example: E164 format phone number 12223334444
+        criteria:
+          type: string
+          example: ALLOW-ALL-INTL
+    ModulesAccess:
+      type: object
+      properties:
+        did:
+          type: boolean
+        msteam:
+          type: boolean
+        ucaas:
+          type: boolean
+        enhancedServices:
+          type: boolean
+        stats:
+          type: boolean
+    ArrayOfCarrierInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/CarrierInfo'
+    ArrayOfAccountInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/AccountInfo'
+    ArrayOfAccountUpdateInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/AccountInfoUpdate'
+    ArrayOfDepartmentInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/DepartmentInfo'
+    ArrayOfZoomInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/ZoomInfo'
+    ArrayOfInternationalCallingInfo:
+      type: array
+      items:
+        $ref: '#/components/schemas/InternationalCallingInfo'
+  securitySchemes:
+    x-access-token:
+      description: |
+        Get access to data while protecting your account credentials.
+        OAuth2 is also a safer and more secure way to give you access.
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://api.nuwave.com/api/v1/oauth2/authorize
+          scopes:
+            write:Accounts: modify accounts in your account
+            read:Accounts: read your accounts
+            write:MicrosoftTeams: modify Microsoft Teams in your account
+            read:MicrosoftTeams: read your Microsoft Teams information
+    api_key:
+      type: apiKey
+      name: x-api-key
+      in: header
