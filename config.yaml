@@ -1,4 +1,4 @@
-package: client
+package: ipilot
 output: client.gen.go
 generate:
   models: true
