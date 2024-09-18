@@ -454,7 +454,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
       requestBody:
         content:
           application/json:
@@ -503,7 +503,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
       requestBody:
         content:
           application/json:
@@ -549,7 +549,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
         - name: phoneNumber
           in: path
           required: true
@@ -645,7 +645,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
       requestBody:
         content:
           application/json:
@@ -781,7 +781,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
       requestBody:
         content:
           application/json:
@@ -913,7 +913,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
         - name: x-api-key
           in: header
           schema:
@@ -962,7 +962,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
         - name: Cookie
           in: header
           schema:
@@ -1009,7 +1009,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
       requestBody:
         content:
           application/json:
@@ -1058,7 +1058,7 @@ paths:
           in: path
           required: true
           schema:
-            type: number
+            type: integer
       responses:
         "200":
           description: 200 response
@@ -1109,7 +1109,7 @@ paths:
           description: this would be the customer id field
           required: true
           schema:
-            type: number
+            type: integer
             default: 1
       responses:
         "200":
@@ -1186,7 +1186,7 @@ paths:
           description: this would be the customer id field
           required: true
           schema:
-            type: number
+            type: integer
             default: 1
       responses:
         "200":
@@ -1465,7 +1465,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
       requestBody:
         content:
           application/json:
@@ -2905,7 +2905,7 @@ components:
         resellerId:
           type: string
         customerId:
-          type: string
+          type: integer
         companyName:
           type: string
         streetNumber:
