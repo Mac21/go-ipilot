@@ -450,6 +450,11 @@ paths:
           in: header
           schema:
             type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
@@ -494,7 +499,7 @@ paths:
           in: header
           schema:
             type: string
-        - name: id
+        - name: customerId
           in: path
           required: true
           schema:
@@ -540,11 +545,6 @@ paths:
           in: header
           schema:
             type: string
-        - name: resellerId
-          in: path
-          required: true
-          schema:
-            type: number
         - name: customerId
           in: path
           required: true
@@ -641,6 +641,11 @@ paths:
           in: header
           schema:
             type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
@@ -772,6 +777,11 @@ paths:
           in: header
           schema:
             type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
@@ -999,7 +1009,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: number
       requestBody:
         content:
           application/json:
@@ -1044,11 +1054,11 @@ paths:
           in: header
           schema:
             type: string
-        - name: phoneNumber
+        - name: customerId
           in: path
           required: true
           schema:
-            type: string
+            type: number
       responses:
         "200":
           description: 200 response
@@ -1083,7 +1093,7 @@ paths:
           in: header
           schema:
             type: string
-        - name: subomain
+        - name: subdomain
           in: path
           required: true
           schema:
@@ -1160,7 +1170,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: subomain
+        - name: subdomain
           in: path
           required: true
           schema:
@@ -1307,7 +1317,7 @@ paths:
           in: header
           schema:
             type: string
-        - name: id
+        - name: subdomain
           in: path
           required: true
           schema:
@@ -1449,6 +1459,11 @@ paths:
             type: string
         - name: x-api-key
           in: header
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
           schema:
             type: string
       requestBody:
