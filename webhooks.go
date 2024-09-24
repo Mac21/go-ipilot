@@ -1,7 +1,7 @@
 package ipilot
 
 type Event struct {
-	AccountID                 int    `json:"account_id"`
+	AccountID                 int    `json:"Account_id"`
 	Object                    string `json:"event_object"`
 	Action                    string `json:"event_action"`
 	Type                      string `json:"event_type"`
