@@ -13,7 +13,7 @@ type Event struct {
 	CallpathCount             int    `json:"call_path_count"`
 	PONNumber                 string `json:"pon_number"`
 	ExternalCustomerAccountID string `json:"external_customer_account_id"`
-	ResellerOwnSKU            string `json:"reseller_own_sku"`
-	PlatformOwnSKU            string `json:"platform_own_sku"`
-	SystemSKU                 string `json:"system_sku"`
+	ResellerOwnSKU            string `json:"reseller_own_sku,omitempty"`
+	PlatformOwnSKU            string `json:"platform_own_sku,omitempty"`
+	SystemSKU                 string `json:"system_sku,omitempty"`
 }
